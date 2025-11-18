@@ -10,7 +10,7 @@ class AssemblyType:
     """
     def __init__(self, main_type_arg:str, sub_type_arg:str=""):
         self.assembled_flag = False# 초기 상태에서는 조립에 사용되지 않음의 뜻으로 False 상태
-        self.parent_item:Item = None
+        self.parent_item: 'Item' = None
 
         self.main_type:str=""
         self.sub_type:str=""
@@ -24,9 +24,9 @@ class AssemblyType:
         return self.main_type, self.sub_type
     
     def set_assembled_flag(self, assembled_flag_arg:bool):
-        self.assembled = assembled_flag_arg
+        self.assembled_flag = assembled_flag_arg
 
-    def set_parent_item(self, parent_item_arg:Item):
+    def set_parent_item(self, parent_item_arg: 'Item'):
         self.parent_item = parent_item_arg
     
     def get_parent_item(self):
@@ -48,6 +48,7 @@ class Item:
 
     def add_type(self, type_arg:AssemblyType):
         self.type_list.append(type_arg)
+        type_arg.set_parent_item(self)
 
     def get_type_list(self)->list[AssemblyType]:
         return self.type_list
@@ -125,7 +126,6 @@ def check_matching(state_arg:State, assembly_data_base:AssemblyGroupDataBase)->l
     after_check_item_list:list[Item] = []
     match_list:list[AssemblyType] = []
 
-    print(before_check_item_list)
     while len(before_check_item_list) > 0:
         # 앤드아이템
         enditme:Item = before_check_item_list.pop()
@@ -168,7 +168,7 @@ def execute_assemble(match_set:list[AssemblyType]):
     for assembly_type in match_set:
         assembly_type.set_assembled_flag(True)
 
-def search_algorithm(init_state_arg:list, goal_state_arg:list, assembly_data_base:AssemblyGroupDataBase):
+def search_algorithm(init_state_arg:list, goal_state_arg:list, assembly_data_base:AssemblyGroupDataBase)->list[list[AssemblyType]]:
     """
     goal 달성/혹은 실패시 Planning 종료
 
@@ -179,15 +179,16 @@ def search_algorithm(init_state_arg:list, goal_state_arg:list, assembly_data_bas
     - goal state 고려 
     위 두가지 알고리즘 관련 부분을 생략하고, 단순히 먼저 발견한 매칭 가능한 후보부터 조립하는 방식으로 구현됨. 
     """
-    plan_sequence:list[list] = []
+    plan_sequence:list[list[AssemblyType]] = []
     while True:
         match_list = check_matching(init_state_arg, assembly_data_base)
         if len(match_list) == 0:
             print("더 이상 조립 가능한 타입 그룹이 없음. Planning 종료.")
             break
-
+        plan_sequence.append(match_list[0])
         execute_assemble(match_list[0])
 
+    return plan_sequence
 
 def main():
     # 타입 데이터 생성 단계
@@ -247,7 +248,7 @@ def main():
     item_5.add_type(type_D_m)
 
     # State 정의 단계
-    state = State(item_list=[item_0, item_1, item_2, item_3, item_4, item_5])
+    init_state = State(item_list=[item_0, item_1, item_2, item_3, item_4, item_5])
 
     # test
     bool = assembly_data_base.check_can_assemble([type_B_m, type_B_i, type_B_f])
@@ -267,12 +268,14 @@ def main():
     bool = assembly_data_base.check_can_assemble([type_B_m, type_B_i, type_B_f, type_A_m, type_A_f])
     print(bool)
 
-    match_list:list[list[AssemblyType]] = check_matching(state, assembly_data_base)
-    print("매칭 후보 수:", len(match_list))
-    for match in match_list:
+    plan_sequence = search_algorithm(init_state, None, assembly_data_base)
+    print("-----")
+    for match in plan_sequence:
         for assembly_type in match:
+            parent_item = assembly_type.get_parent_item()
+            print("부품 이름:", parent_item.name)
             main_type, sub_type = assembly_type.get_type()
-            print(f"매칭 후보 타입: {main_type}-{sub_type}")
+            print(f"  └->매칭 후보 타입: {main_type}-{sub_type}")
         print("-----")
 
 if __name__ == "__main__":

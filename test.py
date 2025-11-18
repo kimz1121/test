@@ -6,15 +6,15 @@ class AssemblyType:
     조립부종류(AssemblyType)를 설명하는 객체
     객체에 저장한 정보를 바탕으로 조립부 간의 차이점과 공통점을 구분한다.
     """
-    def __init__(self, name_arg:str):
-        self.name = name_arg
+    def __init__(self, main_type_arg:str, sub_type_arg:str=""):
         self.assembled_flag = False# 초기 상태에서는 조립에 사용되지 않음의 뜻으로 False 상태
 
         self.main_type:str=""
         self.sub_type:str=""
+        self.set_type(main_type_arg, sub_type_arg)
 
-    def set_type(self, type_arg:str, sub_type_arg:str=""):
-        self.main_type = type_arg
+    def set_type(self, main_type_arg:str, sub_type_arg:str=""):
+        self.main_type = main_type_arg
         self.sub_type = sub_type_arg
 
     def get_type(self)->tuple[str, str]:
@@ -37,7 +37,7 @@ class Item:
     def set_name(self, name_arg:str):
         self.name = name_arg
 
-    def set_type(self, type_arg:AssemblyType):
+    def add_type(self, type_arg:AssemblyType):
         self.type_list.append(type_arg)
 
     def get_type_list(self)->list:
@@ -49,29 +49,30 @@ class AssemblyGroupDataBase:
     matching_system이 AssemblyGroupDataBase를 조회하여 
     Item이 가진 AssemblyType 간의 묶임(조립가능)여부를 판단한다.
     """
-    assembly_group_data = {}
     def __init__(self):
+        self.assembly_group_data = {}
         ...
 
-    def set_bundle(cls, type_group:list[AssemblyType]):
-        if len(type_group) > 0:
-            assembly_type = type_group[0]
+    def add_assembly_type_group(self, assembly_type_group:list[AssemblyType]):
+        if len(assembly_type_group) > 0:
+            assembly_type = assembly_type_group[0]
             gorup_type, _ = assembly_type.get_type()
             sub_type_list = []
-            for assembly_type in type_group:
+            for assembly_type in assembly_type_group:
                 main_type, sub_type = assembly_type.get_type()
                 if gorup_type != main_type:
                     # 타입 그룹화 오류 발생, 
                     # 서로 다른 타입 간의 그룹화 발생
                     return
                 sub_type_list.append(sub_type)
+        print(gorup_type)
+        print(sub_type_list)
+        self.assembly_group_data.update({gorup_type : sub_type_list})
 
-        cls.assembly_group_data.update({gorup_type, sub_type_list})
-
-    def check_can_assemble(cls, type_group:list[AssemblyType]):
+    def check_can_assemble(self, candidate_type_group:list[AssemblyType]):
         main_type_list:list = []
         sub_type_list:list = []
-        for type in type_group:
+        for type in candidate_type_group:
             main_type, sub_type = type.get_type()
             main_type_list.append(main_type)
             sub_type_list.append(sub_type)
@@ -79,10 +80,18 @@ class AssemblyGroupDataBase:
         if all(main_type_list) == True:# main type이 모두 같은 값을 가졌는지 확인.
             main_type = main_type_list[0]# 그룹의 첫 번째 원소로 부터 main type을 확인.  
             sub_type_list
-            group_data = cls.assembly_group_data.get(main_type)
+            grouped_sub_type_data = self.assembly_group_data.get(main_type)
 
-            sub_type_list
-            group_data
+            for sub_type in grouped_sub_type_data:
+                if sub_type in sub_type_list:
+                    sub_type_list.remove(sub_type)
+                else:
+                    return False# Group이 되기 위해 요구되는 sub_type을 candidate_type_group 내에서 찾지 못했을 경우 조립 불가함.
+            
+            if len(sub_type_list) == 0:
+                return True# Group이 되기 위해 요구되는 sub_type을 알맞게 찾은 경우 candidate_type_group은 조립 가능함.
+            else:
+                return False# Group이 되기 위해 요구되는 양 보다 더 많은 sub_type이 주어진 경우 올바른 조립이 아니라서 조립 불가함.
 
 class State:
     def __init__(self, item_list):
@@ -115,16 +124,87 @@ def execute_assemble(match_list):
 
 def BFS_search_algorithm(init_state:list, target_state:list):
     # 탐색 우선순위는 BFS로 정함.
-
     ...
 
     # goal 달성/혹은 실패시 Planning 종료
 
 
 def main():
-    # 데이터 생성 단계
-    item_list = []
+    # 타입 정의
+    type_A_m = AssemblyType(main_type_arg="A", sub_type_arg="m")
+    type_A_f = AssemblyType(main_type_arg="A", sub_type_arg="f")
 
+    type_B_m = AssemblyType(main_type_arg="B", sub_type_arg="m")
+    type_B_i = AssemblyType(main_type_arg="B", sub_type_arg="i")
+    type_B_f = AssemblyType(main_type_arg="B", sub_type_arg="f")
+    
+    type_C_m = AssemblyType(main_type_arg="C", sub_type_arg="m")
+    type_C_f = AssemblyType(main_type_arg="C", sub_type_arg="f")
+
+    type_D_m = AssemblyType(main_type_arg="D", sub_type_arg="m")
+    type_D_i = AssemblyType(main_type_arg="D", sub_type_arg="i")
+    type_D_f = AssemblyType(main_type_arg="D", sub_type_arg="f")
+
+    type_E_m = AssemblyType(main_type_arg="E", sub_type_arg="m")
+    type_E_f = AssemblyType(main_type_arg="E", sub_type_arg="f")
+
+    type_F_m = AssemblyType(main_type_arg="F", sub_type_arg="m")
+    type_F_f = AssemblyType(main_type_arg="F", sub_type_arg="f")
+
+    # 타입간 조립 관계 데이터 베이스 저장
+    data_base = AssemblyGroupDataBase() 
+    data_base.add_assembly_type_group([type_A_m, type_A_f])
+    data_base.add_assembly_type_group([type_B_m, type_B_i, type_B_f])
+    data_base.add_assembly_type_group([type_C_m, type_C_f])
+    data_base.add_assembly_type_group([type_D_m, type_D_i, type_D_f])
+    data_base.add_assembly_type_group([type_E_m, type_E_f])
+    data_base.add_assembly_type_group([type_F_m, type_F_f])
+
+    # 데이터 생성 단계
+    item_0 = Item(name_arg="도어체커")
+    item_0.add_type(type_C_m)
+    item_0.add_type(type_D_i)
+
+    item_1 = Item(name_arg="도어레치")
+    item_1.add_type(type_A_f)
+    item_1.add_type(type_B_f)
+    item_1.add_type(type_E_m)
+    item_1.add_type(type_F_m)
+
+    item_2 = Item(name_arg="프론트 도어")
+    item_2.add_type(type_A_m)
+    item_2.add_type(type_B_i)
+    item_2.add_type(type_C_f)
+
+    item_3 = Item(name_arg="바디")
+    item_3.add_type(type_D_f)
+
+    item_4 = Item(name_arg="볼트1")
+    item_4.add_type(type_B_m)
+
+    item_5 = Item(name_arg="볼트2")
+    item_5.add_type(type_D_m)
+
+    item_list = [item_0, item_1, item_2, item_3, item_4, item_5]
+
+
+    # test
+    bool = data_base.check_can_assemble([type_B_m, type_B_i, type_B_f])
+    print(bool)
+    bool = data_base.check_can_assemble([type_B_m, type_B_f])
+    print(bool)
+    bool = data_base.check_can_assemble([type_B_m, type_B_i])
+    print(bool)
+    bool = data_base.check_can_assemble([type_B_i, type_B_f])
+    print(bool)
+    bool = data_base.check_can_assemble([type_B_m])
+    print(bool)
+    bool = data_base.check_can_assemble([type_B_i])
+    print(bool)
+    bool = data_base.check_can_assemble([type_B_f])
+    print(bool)
+    bool = data_base.check_can_assemble([type_B_m, type_B_i, type_B_f, type_A_m, type_A_f])
+    print(bool)
 
 if __name__ == "__main__":
     main()

@@ -1,7 +1,7 @@
 # 일단 파이썬 형식으로 만들고, 코드가 낮선 사람들을 위해 몇몇 부분을 간략화 하자
 # data
 
-import copy
+from pprint import pprint
 
 class AssemblyType:
     """
@@ -75,8 +75,6 @@ class AssemblyGroupDataBase:
                     # 서로 다른 타입 간의 그룹화 발생
                     return
                 sub_type_list.append(sub_type)
-        print(gorup_type)
-        print(sub_type_list)
         self.assembly_group_data.update({gorup_type : sub_type_list})
 
     def get_assembly_group_data(self, main_type:str)->list:  
@@ -107,6 +105,10 @@ class AssemblyGroupDataBase:
                 return False# Group이 되기 위해 요구되는 양 보다 더 많은 sub_type이 주어진 경우 올바른 조립이 아니라서 조립 불가함.
 
 class State:
+    """
+    상태(State)를 정의하는 객체
+    아이템 리스트를 저장하여 planning system의 Search Algorithim이 현재를 추적할 수 있도록 함.
+    """
     def __init__(self, item_list):
         self.item_state_list:list[Item] = item_list.copy()
 
@@ -116,7 +118,7 @@ class State:
 # 객체 리스트
 
 # 매칭 탐색 함수
-def check_matching(state_arg:State, assembly_data_base:AssemblyGroupDataBase)->list:
+def check_matching(state_arg:State, assembly_data_base:AssemblyGroupDataBase)->list[list[AssemblyType]]:
     """
     주어진 상태에서 가능한 matching 후보를 제안함
     (= 모델에서 가능한 Transition을 제시함.)
@@ -157,7 +159,6 @@ def check_matching(state_arg:State, assembly_data_base:AssemblyGroupDataBase)->l
                 # 조립 가능한 타입 그룹의 모든 타입을 찾았는지 확인
                 if assembly_data_base.check_can_assemble(assembly_candidate) == True:
                     match_list.append(assembly_candidate)
-                    print("매칭 후보 발견:", main_type, acquired_sub_type_list)
 
     return match_list
 
@@ -182,13 +183,30 @@ def search_algorithm(init_state_arg:list, goal_state_arg:list, assembly_data_bas
     plan_sequence:list[list[AssemblyType]] = []
     while True:
         match_list = check_matching(init_state_arg, assembly_data_base)
+        print("▶발견된 타입 매칭 후보:")
         if len(match_list) == 0:
-            print("더 이상 조립 가능한 타입 그룹이 없음. Planning 종료.")
+            print("후보 리스트가 비었음!")
+            print("더 이상 조립 가능한 타입 그룹이 없으므로. Planning 종료.")
             break
+
+        pprint([[assembly_type.get_type() for assembly_type in match] for match in match_list])
+        print("▶선택된 타입 매칭 후보:")
+        print([assembly_type.get_type() for assembly_type in match_list[0]])
+        print("▶조립 실행 및 상태 갱신:")
         plan_sequence.append(match_list[0])
         execute_assemble(match_list[0])
+        print("-----")
 
     return plan_sequence
+
+def print_plan_sequence(plan_sequence:list[list[AssemblyType]]):
+    for match in plan_sequence:
+        for assembly_type in match:
+            parent_item = assembly_type.get_parent_item()
+            print("부품 이름:", parent_item.name)
+            main_type, sub_type = assembly_type.get_type()
+            print(f"  └->매칭 후보 타입: {main_type}-{sub_type}")
+        print("-----")
 
 def main():
     # 타입 데이터 생성 단계
@@ -250,33 +268,15 @@ def main():
     # State 정의 단계
     init_state = State(item_list=[item_0, item_1, item_2, item_3, item_4, item_5])
 
-    # test
-    bool = assembly_data_base.check_can_assemble([type_B_m, type_B_i, type_B_f])
-    print(bool)
-    bool = assembly_data_base.check_can_assemble([type_B_m, type_B_f])
-    print(bool)
-    bool = assembly_data_base.check_can_assemble([type_B_m, type_B_i])
-    print(bool)
-    bool = assembly_data_base.check_can_assemble([type_B_i, type_B_f])
-    print(bool)
-    bool = assembly_data_base.check_can_assemble([type_B_m])
-    print(bool)
-    bool = assembly_data_base.check_can_assemble([type_B_i])
-    print(bool)
-    bool = assembly_data_base.check_can_assemble([type_B_f])
-    print(bool)
-    bool = assembly_data_base.check_can_assemble([type_B_m, type_B_i, type_B_f, type_A_m, type_A_f])
-    print(bool)
-
+    # Planning 수행 단계
+    print("---<Planning 시작>---")
     plan_sequence = search_algorithm(init_state, None, assembly_data_base)
-    print("-----")
-    for match in plan_sequence:
-        for assembly_type in match:
-            parent_item = assembly_type.get_parent_item()
-            print("부품 이름:", parent_item.name)
-            main_type, sub_type = assembly_type.get_type()
-            print(f"  └->매칭 후보 타입: {main_type}-{sub_type}")
-        print("-----")
+    print("---<Planning 종료>---")
+
+    # Planning 결과 출력 단계
+    print("---<결과 출력 시작>---")
+    print_plan_sequence(plan_sequence)
+    print("---<결과 출력 종료>---")
 
 if __name__ == "__main__":
     main()

@@ -178,7 +178,10 @@ def search_algorithm(init_state_arg:list, goal_state_arg:list, assembly_data_bas
     위 두가지 알고리즘 관련 부분을 생략하고, 단순히 먼저 발견한 매칭 가능한 후보부터 조립하는 방식으로 구현됨. 
     """
     plan_sequence:list[list[AssemblyType]] = []
+    n = 1
     while True:
+        print(f"=== [Planning Step {n}] ===")
+        n += 1
         match_list = check_matching(init_state_arg, assembly_data_base)
         print("▶발견된 타입 매칭 후보:")
         if len(match_list) == 0:
@@ -192,12 +195,13 @@ def search_algorithm(init_state_arg:list, goal_state_arg:list, assembly_data_bas
         print("▶조립 실행 및 상태 갱신:")
         plan_sequence.append(match_list[0])
         execute_assemble(match_list[0])
-        print("-----")
+        print("\n-----\n")
 
     return plan_sequence
 
 def print_plan_sequence(plan_sequence:list[list[AssemblyType]]):
-    for match in plan_sequence:
+    for planning_step, match in enumerate(plan_sequence):
+        print(f"[조립 단계 {planning_step+1}]")
         for assembly_type in match:
             parent_item = assembly_type.get_parent_item()
             print("부품 이름:", parent_item.name)
@@ -206,7 +210,8 @@ def print_plan_sequence(plan_sequence:list[list[AssemblyType]]):
         print("-----")
 
 def main():
-    # 타입 데이터 생성 단계
+    # 1. 데이터 생성 단계
+    # 1-1. 타입 데이터 생성 단계
     # 도어레치-프론트도어
     type_A_m = AssemblyType(main_type_arg="A", sub_type_arg="m")
     type_A_f = AssemblyType(main_type_arg="A", sub_type_arg="f")
@@ -228,7 +233,7 @@ def main():
     type_F_m = AssemblyType(main_type_arg="F", sub_type_arg="m")
     type_F_f = AssemblyType(main_type_arg="F", sub_type_arg="f")
 
-    # 타입간 조립 관계 데이터 베이스 저장
+    # 1-2. 타입간 조립 관계 데이터 베이스 저장
     assembly_data_base = AssemblyGroupDataBase()
     assembly_data_base.add_assembly_type_group([type_A_m, type_A_f])
     assembly_data_base.add_assembly_type_group([type_B_m, type_B_i, type_B_f])
@@ -237,7 +242,7 @@ def main():
     assembly_data_base.add_assembly_type_group([type_E_m, type_E_f])
     assembly_data_base.add_assembly_type_group([type_F_m, type_F_f])
 
-    # 부품 데이터 생성 단계
+    # 1-3. 부품 데이터 생성 단계
     item_0 = Item(name_arg="도어체커")
     item_0.add_type(type_C_m)
     item_0.add_type(type_D_i)
@@ -262,18 +267,19 @@ def main():
     item_5 = Item(name_arg="볼트2")
     item_5.add_type(type_D_m)
 
-    # State 정의 단계
+    # 1-4. State 정의 단계
     init_state = State(item_list=[item_0, item_1, item_2, item_3, item_4, item_5])
 
-    # Planning 수행 단계
-    print("---<Planning 시작>---")
+    # 2. 알고리즘 수행 단계
+    # 2-1. Planning 수행 단계
+    print("---<Planning 시작>---\n")
     plan_sequence = search_algorithm(init_state, None, assembly_data_base)
-    print("---<Planning 종료>---")
+    print("\n---<Planning 종료>---")
 
-    # Planning 결과 출력 단계
-    print("---<결과 출력 시작>---")
+    # 2-2. Planning 결과 출력 단계
+    print("---<결과 출력 시작>---\n")
     print_plan_sequence(plan_sequence)
-    print("---<결과 출력 종료>---")
+    print("\n---<결과 출력 종료>---")
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,3 @@
-# 일단 파이썬 형식으로 만들고, 코드가 낮선 사람들을 위해 몇몇 부분을 간략화 하자
-# data
-
 from pprint import pprint
 
 class AssemblyType:

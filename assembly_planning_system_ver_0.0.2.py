@@ -469,17 +469,21 @@ def print_state_action_sequence_log(state: State) -> None:
     action_sequence_log: list[list[tuple[UUID, int]]] = state.get_action_sequence_log()
     item_list: list[Item] = state.get_item_state_list()
     
-    for planning_step, match in enumerate(action_sequence_log):
-        print(f"[조립 단계 {planning_step + 1}]")
-        for item_uuid, assembly_type_index in match:
-            for item in item_list:
-                if item.get_uuid() == item_uuid:
-                    print("부품 이름:", item.name)
-                    assembly_type = item.get_type_by_index(assembly_type_index)
-                    main_type, sub_type = assembly_type.get_type()
-                    print(f"  └─> 매칭 타입: {main_type}-{sub_type}")
-                    break
-        print("-----")
+    if len(action_sequence_log) == 0:
+        print("[조립 단계 0]")
+        print("아직까지 수행된 조립 없음")
+    else:
+        for planning_step, match in enumerate(action_sequence_log):
+            print(f"[조립 단계 {planning_step + 1}]")
+            for item_uuid, assembly_type_index in match:
+                for item in item_list:
+                    if item.get_uuid() == item_uuid:
+                        print("부품 이름:", item.name)
+                        assembly_type = item.get_type_by_index(assembly_type_index)
+                        main_type, sub_type = assembly_type.get_type()
+                        print(f"  └─> 매칭 타입: {main_type}-{sub_type}")
+                        break
+            print("-----")
 
 
 def print_match_info_list(state: State, match_info_list: list[list[tuple[UUID, int]]]) -> None:
@@ -600,6 +604,32 @@ def main() -> None:
         print("---< plan_number = {} >---\n".format(plan_number))
         print_state_action_sequence_log(final_state)
     print("\n---< 결과 출력 종료 >---")
+
+    
+    # ========================================
+    # 3. State Transition Model 테스트
+    # ========================================
+
+    # --- 3-1. 현재 상테에서 적용 가능한 action 후보 확인 ---
+    print("---< action 후보 확인 시작 >---\n")
+    candidate_match_list = check_candidate_match(init_state, assembly_data_base)
+    print_match_info_list(init_state, candidate_match_list)
+    print("\n---< action 후보 확인 종료 >---")
+    
+    # --- 3-2. action 후보 중 1개 선택 ---
+    print("---< action 후보 선택 시작 >---\n")
+    elected_match = candidate_match_list[0]
+    print_match_info(init_state, elected_match)
+    print("\n---< action 후보 선택 종료 >---")
+
+    # --- 3-3. State에 action 적용하여 State Transition 확인하기 ---
+    print("---< action 적용 및 State Transition 확인 시작 >---\n")
+    updated_state = execute_assemble(init_state, elected_match)
+    print("*초기 상태 : ")
+    print_state_action_sequence_log(init_state)
+    print("\n*action 적용 후 상태 : ")
+    print_state_action_sequence_log(updated_state)
+    print("\n---< action 적용 및 State Transition 확인 종료 >---")
 
 
 if __name__ == "__main__":

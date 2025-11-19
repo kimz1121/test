@@ -369,14 +369,14 @@ def search_algorithm_temp_demo(init_state_arg: State, goal_state_arg: State,
     Returns:
         조립 순서를 나타내는 최종 상태 리스트
     """
-    n: int = 1
-    iteration_limit: int = 10000
+    explored_count: int = 0
+    exploration_limit: int = 10000000
     state: State = init_state_arg
     
     while True:
-        print(f"=== [Planning Step {n}] ===")
-        n += 1
-        if n >= iteration_limit:
+        print(f"=== [Planning Step {explored_count+1}] ===")
+        explored_count += 1
+        if explored_count >= exploration_limit:
             break
             
         # 현재 상태에서 가능한 조립 후보 탐색
@@ -430,10 +430,14 @@ def search_algorithm_BFS(init_state_arg: State, goal_state_arg: State,
     
     # 탐색 과정 로깅
     explored_count: int = 0
+    exploration_limit: int = 10000000# 무한 반복 한계 설정
     
     while queue:
         current_state: State = queue.popleft()
         explored_count += 1
+        # 무한 반복 방지
+        if explored_count >= exploration_limit:
+            break
         
         # 현재 상태에서 가능한 조립 후보 탐색
         candidate_match_list: list[list[tuple[UUID, int]]] = check_candidate_match(current_state, assembly_data_base)

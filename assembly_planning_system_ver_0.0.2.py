@@ -329,7 +329,7 @@ def execute_assemble(state_arg:State, match_set_info_arg: list[tuple[UUID, int]]
 
 
 def search_algorithm_temp_demo(init_state_arg: list, goal_state_arg: list, 
-                    assembly_data_base: AssemblyGroupDataBase) -> list[list[AssemblyType]]:
+                    assembly_data_base: AssemblyGroupDataBase) -> list[State]:
     """조립 계획 탐색 알고리즘
     
     초기 상태에서 목표 상태까지 도달하기 위한 조립 순서를 계획합니다.
@@ -385,8 +385,20 @@ def search_algorithm_temp_demo(init_state_arg: list, goal_state_arg: list,
         print_state_action_sequence_log(state)
         print("\n-----\n")
 
-    return state
+    return [state]# plan은 1가지가 아닐 수 있으므로 리스트의 형태로 반환
 
+
+def search_algorithm_BFS(init_state_arg: list, assembly_data_base: AssemblyGroupDataBase) -> list[State]:
+    """
+    각 개별 State 객체에 action_sequence_log로서 최종 상태까지의 plan이 담기게 된다.
+    BFS 방법을 통해 State 가 갱신되는 모든 경우를 candidate_match_list에서 선택해본다.
+
+    그리고 더이상 조립을 진행할 수 없는 말단 상태의 State들을 한번에 묶어 반환한다.
+    그리고 이것은 우리 시스템에서 가능한 모든 plan의 경우의 수를 순회한 것과 같다.
+    """
+    final_state_list:list[State] = []
+    return 
+    
 
 def print_state_action_sequence_log(state:State):
     """조립 계획 시퀀스 출력
@@ -499,12 +511,13 @@ def main():
     
     # --- 2-1. 조립 계획(Planning) 수행 ---
     print("---< Planning 시작 >---\n")
-    final_state = search_algorithm_temp_demo(init_state, None, assembly_data_base)
+    final_state_list = search_algorithm_temp_demo(init_state, None, assembly_data_base)
     print("\n---< Planning 종료 >---")
 
     # --- 2-2. 결과 출력 ---
     print("---< 결과 출력 시작 >---\n")
-    print_state_action_sequence_log(final_state)
+    for final_state in final_state_list:
+        print_state_action_sequence_log(final_state)
     print("\n---< 결과 출력 종료 >---")
 
 if __name__ == "__main__":

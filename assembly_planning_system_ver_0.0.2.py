@@ -18,43 +18,44 @@ class AssemblyType:
         sub_type (str): 부 타입 (예: 'm', 'f', 'i')
     """
     
-    def __init__(self, main_type_arg: str, sub_type_arg: str = ""):
+    def __init__(self, main_type_arg: str, sub_type_arg: str = "") -> None:
         """AssemblyType 초기화
         
         Args:
             main_type_arg: 주 타입 문자열
             sub_type_arg: 부 타입 문자열 (기본값: "")
         """
-        self.assembled_flag = False  # 초기 상태: 조립에 미사용
+        self.assembled_flag: bool = False  # 초기 상태: 조립에 미사용
         self.parent_item: 'Item' = None
         self.main_type: str = ""
         self.sub_type: str = ""
         self.set_type(main_type_arg, sub_type_arg)
 
-    def set_type(self, main_type_arg: str, sub_type_arg: str = ""):
-        """타입 설정"""
+    def set_type(self, main_type_arg: str, sub_type_arg: str = "") -> None:
+        """타입을 설정합니다"""
         self.main_type = main_type_arg
         self.sub_type = sub_type_arg
 
     def get_type(self) -> tuple[str, str]:
-        """타입 정보 반환
+        """타입 정보를 반환합니다
         
         Returns:
             (main_type, sub_type) 튜플
         """
         return self.main_type, self.sub_type
     
-    def set_assembled_flag(self, assembled_flag_arg: bool):
-        """조립 사용 여부 플래그 설정"""
+    def set_assembled_flag(self, assembled_flag_arg: bool) -> None:
+        """조립 사용 여부 플래그를 설정합니다"""
         self.assembled_flag = assembled_flag_arg
 
-    def set_parent_item(self, parent_item_arg: 'Item'):
-        """부모 아이템(부품) 설정"""
+    def set_parent_item(self, parent_item_arg: 'Item') -> None:
+        """부모 아이템(부품)을 설정합니다"""
         self.parent_item = parent_item_arg
     
-    def get_parent_item(self):
-        """부모 아이템(부품) 반환"""
+    def get_parent_item(self) -> 'Item':
+        """부모 아이템(부품)을 반환합니다"""
         return self.parent_item
+
 
 class Item:
     """부품을 나타내는 클래스
@@ -63,48 +64,31 @@ class Item:
     하나의 부품은 여러 개의 조립부 타입을 가질 수 있습니다.
     
     Attributes:
+        uuid (UUID): 부품의 고유 식별자
         name (str): 부품 이름
         type_list (list[AssemblyType]): 부품이 가진 조립부 타입 리스트
     """
-    # uuid_list:list[UUID] = []# 고유 ID 할당 시, 기존 ID 리스트를 확인하여 중복 방지
-    def __init__(self, name_arg: str = ""):
+    
+    def __init__(self, name_arg: str = "") -> None:
         """Item 초기화
         
         Args:
             name_arg: 부품 이름 (기본값: "")
         """
-        self.uuid:UUID = None# 고유 구분자
+        self.uuid: UUID = uuid.uuid4()  # 고유 식별자 생성
         self.name: str = name_arg
         self.type_list: list[AssemblyType] = []
-
-        self.uuid = uuid.uuid4()
-        # self.uuid = self.generate_uuid()
-        # Item.uuid_list.append(self.uuid)
-
-    # def __del__(self):
-    #     Item.uuid_list.remove(self.uuid)
-
-    # def generate_uuid(self):
-    #     n = 0
-    #     while True:
-    #         n =+ 1 
-    #         sampled_uuid = uuid.uuid4()
-    #         if sampled_uuid not in Item.uuid_list:
-    #             break
-    #         if n >= 10:
-    #             assert 0, "failed to generate uuid"
-    #             break
-    #     return sampled_uuid
     
-    def get_uuid(self):
+    def get_uuid(self) -> UUID:
+        """부품의 고유 식별자를 반환합니다"""
         return self.uuid
 
-    def set_name(self, name_arg: str):
-        """부품 이름 설정"""
+    def set_name(self, name_arg: str) -> None:
+        """부품 이름을 설정합니다"""
         self.name = name_arg
 
-    def add_type(self, type_arg: AssemblyType):
-        """조립부 타입 추가
+    def add_type(self, type_arg: AssemblyType) -> None:
+        """조립부 타입을 추가합니다
         
         Args:
             type_arg: 추가할 AssemblyType 객체
@@ -113,10 +97,18 @@ class Item:
         type_arg.set_parent_item(self)
 
     def get_type_list(self) -> list[AssemblyType]:
-        """조립부 타입 리스트 반환"""
+        """조립부 타입 리스트를 반환합니다"""
         return self.type_list
     
-    def get_type_by_index(self, index)->AssemblyType:
+    def get_type_by_index(self, index: int) -> AssemblyType:
+        """인덱스로 조립부 타입을 반환합니다
+        
+        Args:
+            index: 조립부 타입의 인덱스
+            
+        Returns:
+            해당 인덱스의 AssemblyType 객체
+        """
         return self.type_list[index]
 
 
@@ -133,11 +125,12 @@ class AssemblyGroupDataBase:
         assembly_group_data (dict): {main_type: [sub_type 리스트]} 형태의 조립 그룹 데이터
     """
     
-    def __init__(self):
-        self.assembly_group_data = {}
+    def __init__(self) -> None:
+        """AssemblyGroupDataBase 초기화"""
+        self.assembly_group_data: dict[str, list[str]] = {}
 
-    def add_assembly_type_group(self, assembly_type_group: list[AssemblyType]):
-        """조립 가능한 타입 그룹 추가
+    def add_assembly_type_group(self, assembly_type_group: list[AssemblyType]) -> None:
+        """조립 가능한 타입 그룹을 추가합니다
         
         같은 main_type을 가진 AssemblyType들의 sub_type 목록을 저장합니다.
         
@@ -147,7 +140,7 @@ class AssemblyGroupDataBase:
         if len(assembly_type_group) > 0:
             assembly_type = assembly_type_group[0]
             group_type, _ = assembly_type.get_type()
-            sub_type_list = []
+            sub_type_list: list[str] = []
             
             for assembly_type in assembly_type_group:
                 main_type, sub_type = assembly_type.get_type()
@@ -158,8 +151,8 @@ class AssemblyGroupDataBase:
             
             self.assembly_group_data.update({group_type: sub_type_list})
 
-    def get_assembly_group_data(self, main_type: str) -> list:
-        """특정 main_type에 대한 조립 가능한 sub_type 리스트 반환
+    def get_assembly_group_data(self, main_type: str) -> list[str]:
+        """특정 main_type에 대한 조립 가능한 sub_type 리스트를 반환합니다
         
         Args:
             main_type: 조회할 main_type
@@ -170,7 +163,7 @@ class AssemblyGroupDataBase:
         return self.assembly_group_data.get(main_type)
 
     def check_can_assemble(self, candidate_type_group: list[AssemblyType]) -> bool:
-        """후보 타입 그룹이 조립 가능한지 검증
+        """후보 타입 그룹이 조립 가능한지 검증합니다
         
         주어진 AssemblyType 리스트가 데이터베이스에 정의된 
         조립 규칙을 만족하는지 확인합니다.
@@ -181,8 +174,8 @@ class AssemblyGroupDataBase:
         Returns:
             조립 가능 여부 (True/False)
         """
-        main_type_list: list = []
-        sub_type_list: list = []
+        main_type_list: list[str] = []
+        sub_type_list: list[str] = []
         
         for type in candidate_type_group:
             main_type, sub_type = type.get_type()
@@ -208,7 +201,7 @@ class AssemblyGroupDataBase:
                 # 필요한 것보다 더 많은 sub_type이 있음: 조립 불가
                 return False
 
-# 기존까지의 조립 과정을 로깅하는 기능 추가 필요
+
 class State:
     """시스템의 전체 상태를 나타내는 클래스
     
@@ -218,29 +211,37 @@ class State:
     
     Attributes:
         item_state_list (list[Item]): 현재 상태의 부품 리스트
+        action_sequence_log (list[list[tuple[UUID, int]]]): 조립 과정 로그
     """
     
-    def __init__(self, item_list):
+    def __init__(self, item_list: list[Item]) -> None:
         """State 초기화
         
         Args:
             item_list: Item 객체들의 리스트
         """
         self.item_state_list: list[Item] = item_list.copy()
-        self.action_sequence_log: list[tuple[UUID, int]] = []
+        self.action_sequence_log: list[list[tuple[UUID, int]]] = []
 
-    def get_item_state_list(self):
-        """부품 상태 리스트 반환"""
+    def get_item_state_list(self) -> list[Item]:
+        """부품 상태 리스트를 반환합니다"""
         return self.item_state_list
 
-    def loging_action_sequence(self, match_set_info:list[tuple[UUID, int]]):
+    def loging_action_sequence(self, match_set_info: list[tuple[UUID, int]]) -> None:
+        """조립 액션을 로그에 기록합니다
+        
+        Args:
+            match_set_info: 조립된 부품들의 (UUID, assembly_type_index) 정보
+        """
         self.action_sequence_log.append(match_set_info)
 
-    def get_action_sequence_log(self)->list[tuple[UUID, int]]:
+    def get_action_sequence_log(self) -> list[list[tuple[UUID, int]]]:
+        """조립 과정 로그를 반환합니다"""
         return self.action_sequence_log
 
+
 def check_candidate_match(state_arg: State, assembly_data_base: AssemblyGroupDataBase) -> list[list[tuple[UUID, int]]]:
-    """현재 상태에서 가능한 조립 후보들을 탐색
+    """현재 상태에서 가능한 조립 후보들을 탐색합니다
     
     주어진 상태(State)에서 조립 가능한 AssemblyType 조합들을 찾습니다.
     각 조합은 데이터베이스의 조립 규칙을 만족해야 합니다.
@@ -251,30 +252,34 @@ def check_candidate_match(state_arg: State, assembly_data_base: AssemblyGroupDat
         
     Returns:
         조립 가능한 AssemblyType 조합들의 리스트
-        각 조합은 [AssemblyType, AssemblyType, ...] 형태
+        각 조합은 [(UUID, int), (UUID, int), ...] 형태
     """
     before_visit_item_list: list[Item] = state_arg.get_item_state_list().copy()
-    candidate_match_list: list[list[tuple[UUID, int]]] = []# item uuid와 assembly_type_index 를 통해 조립을 표현 
+    candidate_match_list: list[list[tuple[UUID, int]]] = []  # item uuid와 assembly_type_index를 통해 조립을 표현
 
     while len(before_visit_item_list) > 0:
         # 검사할 부품 선택
         anchor_item: Item = before_visit_item_list.pop()
-        anchor_item_uuid = anchor_item.get_uuid()
-        anchor_assembly_type_list = anchor_item.get_type_list()
+        anchor_item_uuid: UUID = anchor_item.get_uuid()
+        anchor_assembly_type_list: list[AssemblyType] = anchor_item.get_type_list()
         
         for anchor_assembly_type_index, anchor_assembly_type in enumerate(anchor_assembly_type_list):
+            # 이미 조립에 사용된 타입은 건너뜀
+            if anchor_assembly_type.assembled_flag:
+                continue
+                
             anchor_main_type, sub_type = anchor_assembly_type.get_type()
-            required_sub_type_list = assembly_data_base.get_assembly_group_data(anchor_main_type)
+            required_sub_type_list: list[str] = assembly_data_base.get_assembly_group_data(anchor_main_type)
 
             if required_sub_type_list is not None and sub_type in required_sub_type_list:
                 # 조립 가능한 타입 그룹의 일부를 발견
                 candidate_assembly_info_list: list[tuple[UUID, int]] = [(anchor_item_uuid, anchor_assembly_type_index)]
-                acquired_sub_type_list = [sub_type]
+                acquired_sub_type_list: list[str] = [sub_type]
                 
                 # 나머지 부품들에서 조립 가능한 타입 찾기
                 for visiting_item in before_visit_item_list:
-                    visiting_item_uuid = visiting_item.get_uuid()
-                    visiting_item_assembly_type_list = visiting_item.get_type_list()
+                    visiting_item_uuid: UUID = visiting_item.get_uuid()
+                    visiting_item_assembly_type_list: list[AssemblyType] = visiting_item.get_type_list()
                     
                     for visiting_assembly_type_index, visiting_item_assembly_type in enumerate(visiting_item_assembly_type_list):
                         if visiting_item_assembly_type.assembled_flag:
@@ -283,7 +288,7 @@ def check_candidate_match(state_arg: State, assembly_data_base: AssemblyGroupDat
                         
                         visiting_main_type, visiting_sub_type = visiting_item_assembly_type.get_type()
                         
-                        # 조립 가능 조건:
+                        # 조립 가능 조건 확인:
                         # 1. 같은 main_type
                         # 2. required_sub_type에 포함됨
                         # 3. 중복되지 않은 sub_type
@@ -297,11 +302,12 @@ def check_candidate_match(state_arg: State, assembly_data_base: AssemblyGroupDat
                             break
                 
                 # 완전한 조립 그룹을 찾았는지 검증
-                candidate_assembly_type_list = []
+                candidate_assembly_type_list: list[AssemblyType] = []
                 for candidate_item_uuid, candidate_assembly_type_index in candidate_assembly_info_list:
                     for item in state_arg.get_item_state_list():
                         if item.get_uuid() == candidate_item_uuid:
                             candidate_item = item
+                            break
                     candidate_assembly_type_list.append(candidate_item.get_type_by_index(candidate_assembly_type_index))
 
                 if assembly_data_base.check_can_assemble(candidate_assembly_type_list):
@@ -309,29 +315,36 @@ def check_candidate_match(state_arg: State, assembly_data_base: AssemblyGroupDat
 
     return candidate_match_list
 
-def execute_assemble(state_arg:State, match_set_info_arg: list[tuple[UUID, int]])->State:
-    """조립 실행
+
+def execute_assemble(state_arg: State, match_set_info_arg: list[tuple[UUID, int]]) -> State:
+    """조립을 실행합니다
     
     조립 가능한 타입들의 assembled_flag를 True로 설정하여
     해당 타입들이 조립에 사용되었음을 표시합니다.
     
     Args:
-        match_set: 조립할 AssemblyType 리스트
+        state_arg: 현재 상태
+        match_set_info_arg: 조립할 AssemblyType 정보 리스트
+        
+    Returns:
+        조립이 실행된 새로운 상태
     """
-    state_copy = copy.deepcopy(state_arg)
+    state_copy: State = copy.deepcopy(state_arg)
+    
     for item_uuid, assembly_type_index in match_set_info_arg:
         for item in state_copy.get_item_state_list():
             if item.get_uuid() == item_uuid:
                 assembly_type = item.get_type_by_index(assembly_type_index)
                 assembly_type.set_assembled_flag(True)
+                break
+    
     state_copy.loging_action_sequence(match_set_info=match_set_info_arg)
-
     return state_copy
 
 
-def search_algorithm_temp_demo(init_state_arg: list, goal_state_arg: list, 
+def search_algorithm_temp_demo(init_state_arg: State, goal_state_arg: State, 
                     assembly_data_base: AssemblyGroupDataBase) -> list[State]:
-    """조립 계획 탐색 알고리즘
+    """조립 계획 탐색 알고리즘 (임시 데모 버전)
     
     초기 상태에서 목표 상태까지 도달하기 위한 조립 순서를 계획합니다.
     
@@ -354,20 +367,22 @@ def search_algorithm_temp_demo(init_state_arg: list, goal_state_arg: list,
         assembly_data_base: 조립 규칙 데이터베이스
         
     Returns:
-        조립 순서를 나타내는 계획 시퀀스
-        각 단계는 [AssemblyType, ...] 형태의 조립 그룹
+        조립 순서를 나타내는 최종 상태 리스트
     """
-    n = 1
-    iteration_limit = 10000
-    state = init_state_arg
+    n: int = 1
+    iteration_limit: int = 10000
+    state: State = init_state_arg
+    
     while True:
         print(f"=== [Planning Step {n}] ===")
         n += 1
         if n >= iteration_limit:
             break
+            
         # 현재 상태에서 가능한 조립 후보 탐색
-        candidate_match_list = check_candidate_match(state, assembly_data_base)
+        candidate_match_list: list[list[tuple[UUID, int]]] = check_candidate_match(state, assembly_data_base)
         print("▶ 발견된 타입 매칭 후보:")
+        
         if len(candidate_match_list) == 0:
             print("후보 리스트가 비었음!")
             print("더 이상 조립 가능한 타입 그룹이 없으므로 Planning 종료.")
@@ -377,73 +392,79 @@ def search_algorithm_temp_demo(init_state_arg: list, goal_state_arg: list,
         
         # 첫 번째 후보 선택 (데모 버전 단순 전략)
         print("▶ 선택된 타입 매칭 후보:")
-        elected_assembly_action = candidate_match_list[0]
+        elected_assembly_action: list[tuple[UUID, int]] = candidate_match_list[0]
         print_match_info(state, elected_assembly_action)
         
-        # 조립 실행 및 계획에 추가
+        # 조립 실행 및 상태 갱신
         print("▶ 조립 실행 및 상태 갱신:")
         state = execute_assemble(state, candidate_match_list[0])
         print_state_action_sequence_log(state)
         print("\n-----\n")
 
-    return [state]# plan은 1가지가 아닐 수 있으므로 리스트의 형태로 반환
+    return [state]  # plan은 1가지가 아닐 수 있으므로 리스트 형태로 반환
 
 
-def search_algorithm_BFS(init_state_arg: list, goal_state_arg: list, 
+def search_algorithm_BFS(init_state_arg: State, goal_state_arg: State, 
                     assembly_data_base: AssemblyGroupDataBase) -> list[State]:
-    """
-    각 개별 State 객체에 action_sequence_log로서 최종 상태까지의 plan이 담기게 된다.
-    BFS 방법을 통해 State 가 갱신되는 모든 경우를 candidate_match_list에서 선택해본다.
-
-    그리고 더이상 조립을 진행할 수 없는 말단 상태의 State들을 한번에 묶어 반환한다.
-    그리고 이것은 우리 시스템에서 가능한 모든 plan의 경우의 수를 순회한 것과 같다.
+    """BFS를 사용하여 가능한 모든 조립 경로를 탐색합니다
+    
+    초기 상태에서 시작하여 너비 우선 탐색(BFS)을 통해 
+    모든 가능한 조립 순서를 시뮬레이션합니다.
+    각 상태에서 발견되는 모든 조립 후보에 대해 새로운 상태를 생성하고,
+    더 이상 조립이 불가능한 모든 최종 상태를 수집합니다.
+    
+    각 최종 상태의 action_sequence_log에는 초기 상태부터 
+    해당 최종 상태에 도달하기까지의 전체 조립 경로가 기록됩니다.
     
     Args:
-        init_state_arg: 초기 상태 (State 객체)
+        init_state_arg: 초기 상태
+        goal_state_arg: 목표 상태 (현재 미사용)
         assembly_data_base: 조립 규칙 데이터베이스
         
     Returns:
-        더 이상 조립이 불가능한 모든 최종 상태들의 리스트
+        더 이상 조립이 불가능한 모든 최종 상태들의 리스트.
+        이는 시스템에서 가능한 모든 조립 경로의 경우의 수를 나타냅니다.
     """
     final_state_list: list[State] = []
-    queue = deque([init_state_arg])
+    queue: deque[State] = deque([init_state_arg])
     
     # 탐색 과정 로깅
-    explored_count = 0
+    explored_count: int = 0
     
     while queue:
-        current_state = queue.popleft()
+        current_state: State = queue.popleft()
         explored_count += 1
         
         # 현재 상태에서 가능한 조립 후보 탐색
-        candidate_match_list = check_candidate_match(current_state, assembly_data_base)
+        candidate_match_list: list[list[tuple[UUID, int]]] = check_candidate_match(current_state, assembly_data_base)
         
         if len(candidate_match_list) == 0:
             # 더 이상 조립할 수 없는 최종 상태 도달
             final_state_list.append(current_state)
-            print(f"[BFS] 최종 상태 발견 (탐색 횟수: {explored_count}, "
+            print(f"최종 상태 발견 (탐색 횟수: {explored_count}, "
                   f"조립 단계 수: {len(current_state.get_action_sequence_log())})")
         else:
             # 각 조립 후보에 대해 새로운 상태 생성 및 큐에 추가
             for match_info in candidate_match_list:
-                new_state = execute_assemble(current_state, match_info)
+                new_state: State = execute_assemble(current_state, match_info)
                 queue.append(new_state)
     
-    print(f"\n[BFS 완료] 총 {explored_count}개 상태 탐색, {len(final_state_list)}개 최종 상태 발견")
+    print(f"\n완료: 총 {explored_count}개 상태 탐색, {len(final_state_list)}개 최종 상태 발견")
     
     return final_state_list
-    
 
-def print_state_action_sequence_log(state:State):
-    """조립 계획 시퀀스 출력
+
+def print_state_action_sequence_log(state: State) -> None:
+    """조립 계획 시퀀스를 출력합니다
     
     각 조립 단계별로 어떤 부품들이 어떤 타입으로 조립되는지 출력합니다.
     
     Args:
-        plan_sequence: 조립 계획 시퀀스
+        state: 출력할 상태 객체
     """
-    action_sequence_log = state.get_action_sequence_log()
-    item_list = state.get_item_state_list()
+    action_sequence_log: list[list[tuple[UUID, int]]] = state.get_action_sequence_log()
+    item_list: list[Item] = state.get_item_state_list()
+    
     for planning_step, match in enumerate(action_sequence_log):
         print(f"[조립 단계 {planning_step + 1}]")
         for item_uuid, assembly_type_index in match:
@@ -453,27 +474,47 @@ def print_state_action_sequence_log(state:State):
                     assembly_type = item.get_type_by_index(assembly_type_index)
                     main_type, sub_type = assembly_type.get_type()
                     print(f"  └─> 매칭 타입: {main_type}-{sub_type}")
+                    break
         print("-----")
-        
-def print_match_info_list(state:State, match_info_list:list[tuple[UUID, int]]):
+
+
+def print_match_info_list(state: State, match_info_list: list[list[tuple[UUID, int]]]) -> None:
+    """매칭 정보 리스트를 출력합니다
+    
+    Args:
+        state: 현재 상태
+        match_info_list: 출력할 매칭 정보 리스트
+    """
     for match_index, match_set in enumerate(match_info_list):
         print("--매칭[{}]--".format(match_index))
-        for uuid, index in match_set:
+        for item_uuid, index in match_set:
             for item in state.get_item_state_list():
-                if item.get_uuid() == uuid:
+                if item.get_uuid() == item_uuid:
                     candidate_item = item
+                    break
             assembly_type = candidate_item.get_type_by_index(index)
-            print("item: {:15}, assembly_main_type: {}, assembly_sub_type: {}".format(candidate_item.name, assembly_type.main_type, assembly_type.sub_type)) 
+            print("item: {:15}, assembly_main_type: {}, assembly_sub_type: {}".format(
+                candidate_item.name, assembly_type.main_type, assembly_type.sub_type))
 
-def print_match_info(state:State, match_info:list[tuple[UUID, int]]):
-    for uuid, index in match_info:
+
+def print_match_info(state: State, match_info: list[tuple[UUID, int]]) -> None:
+    """매칭 정보를 출력합니다
+    
+    Args:
+        state: 현재 상태
+        match_info: 출력할 매칭 정보
+    """
+    for item_uuid, index in match_info:
         for item in state.get_item_state_list():
-            if item.get_uuid() == uuid:
+            if item.get_uuid() == item_uuid:
                 candidate_item = item
+                break
         assembly_type = candidate_item.get_type_by_index(index)
-        print("item: {:15}, assembly_main_type: {}, assembly_sub_type: {}".format(candidate_item.name, assembly_type.main_type, assembly_type.sub_type)) 
+        print("item: {:15}, assembly_main_type: {}, assembly_sub_type: {}".format(
+            candidate_item.name, assembly_type.main_type, assembly_type.sub_type))
 
-def main():
+
+def main() -> None:
     """메인 함수: 조립 계획 시스템 데모"""
     
     # ========================================
@@ -537,8 +578,8 @@ def main():
     item_5.add_type(type_D_m)
 
     # --- 1-4. 초기 상태 정의 ---
-    # init_state = State(item_list=[item_0, item_1, item_2, item_3, item_4, item_5])# 모든 부품 적용 테스트
-    init_state = State(item_list=[item_0, item_2, item_3, item_5])# 도어 체커 관련 부품만 적용
+    # init_state = State(item_list=[item_0, item_1, item_2, item_3, item_4, item_5])  # 모든 부품 적용 테스트
+    init_state = State(item_list=[item_0, item_2, item_3, item_5])  # 도어 체커 관련 부품만 적용
 
     # ========================================
     # 2. 알고리즘 수행 단계
@@ -555,6 +596,7 @@ def main():
         print("---< plan_number = {} >---\n".format(plan_number))
         print_state_action_sequence_log(final_state)
     print("\n---< 결과 출력 종료 >---")
+
 
 if __name__ == "__main__":
     main()

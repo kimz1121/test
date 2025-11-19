@@ -2,6 +2,7 @@ import copy
 from pprint import pprint
 import uuid
 from uuid import UUID
+from collections import deque
 
 class AssemblyType:
     """조립부 종류를 나타내는 클래스
@@ -388,16 +389,49 @@ def search_algorithm_temp_demo(init_state_arg: list, goal_state_arg: list,
     return [state]# plan은 1가지가 아닐 수 있으므로 리스트의 형태로 반환
 
 
-def search_algorithm_BFS(init_state_arg: list, assembly_data_base: AssemblyGroupDataBase) -> list[State]:
+def search_algorithm_BFS(init_state_arg: list, goal_state_arg: list, 
+                    assembly_data_base: AssemblyGroupDataBase) -> list[State]:
     """
     각 개별 State 객체에 action_sequence_log로서 최종 상태까지의 plan이 담기게 된다.
     BFS 방법을 통해 State 가 갱신되는 모든 경우를 candidate_match_list에서 선택해본다.
 
     그리고 더이상 조립을 진행할 수 없는 말단 상태의 State들을 한번에 묶어 반환한다.
     그리고 이것은 우리 시스템에서 가능한 모든 plan의 경우의 수를 순회한 것과 같다.
+    
+    Args:
+        init_state_arg: 초기 상태 (State 객체)
+        assembly_data_base: 조립 규칙 데이터베이스
+        
+    Returns:
+        더 이상 조립이 불가능한 모든 최종 상태들의 리스트
     """
-    final_state_list:list[State] = []
-    return 
+    final_state_list: list[State] = []
+    queue = deque([init_state_arg])
+    
+    # 탐색 과정 로깅
+    explored_count = 0
+    
+    while queue:
+        current_state = queue.popleft()
+        explored_count += 1
+        
+        # 현재 상태에서 가능한 조립 후보 탐색
+        candidate_match_list = check_candidate_match(current_state, assembly_data_base)
+        
+        if len(candidate_match_list) == 0:
+            # 더 이상 조립할 수 없는 최종 상태 도달
+            final_state_list.append(current_state)
+            print(f"[BFS] 최종 상태 발견 (탐색 횟수: {explored_count}, "
+                  f"조립 단계 수: {len(current_state.get_action_sequence_log())})")
+        else:
+            # 각 조립 후보에 대해 새로운 상태 생성 및 큐에 추가
+            for match_info in candidate_match_list:
+                new_state = execute_assemble(current_state, match_info)
+                queue.append(new_state)
+    
+    print(f"\n[BFS 완료] 총 {explored_count}개 상태 탐색, {len(final_state_list)}개 최종 상태 발견")
+    
+    return final_state_list
     
 
 def print_state_action_sequence_log(state:State):
@@ -503,7 +537,8 @@ def main():
     item_5.add_type(type_D_m)
 
     # --- 1-4. 초기 상태 정의 ---
-    init_state = State(item_list=[item_0, item_1, item_2, item_3, item_4, item_5])
+    # init_state = State(item_list=[item_0, item_1, item_2, item_3, item_4, item_5])# 모든 부품 적용 테스트
+    init_state = State(item_list=[item_0, item_2, item_3, item_5])# 도어 체커 관련 부품만 적용
 
     # ========================================
     # 2. 알고리즘 수행 단계
@@ -511,12 +546,13 @@ def main():
     
     # --- 2-1. 조립 계획(Planning) 수행 ---
     print("---< Planning 시작 >---\n")
-    final_state_list = search_algorithm_temp_demo(init_state, None, assembly_data_base)
+    final_state_list = search_algorithm_BFS(init_state, None, assembly_data_base)
     print("\n---< Planning 종료 >---")
 
     # --- 2-2. 결과 출력 ---
     print("---< 결과 출력 시작 >---\n")
-    for final_state in final_state_list:
+    for plan_number, final_state in enumerate(final_state_list):
+        print("---< plan_number = {} >---\n".format(plan_number))
         print_state_action_sequence_log(final_state)
     print("\n---< 결과 출력 종료 >---")
 

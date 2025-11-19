@@ -507,16 +507,5 @@ def main():
     print_state_action_sequence_log(final_state)
     print("\n---< 결과 출력 종료 >---")
 
-    # state = init_state
-    # match_candidate_info = check_candidate_match(state, assembly_data_base)
-    # print_match_info(state, match_candidate_info)
-
-    # print("==================")
-    # new_state = execute_assemble(state, match_candidate_info[0])
-
-    # match_candidate_info = check_candidate_match(new_state, assembly_data_base)
-    # print_match_info(new_state, match_candidate_info)
-
-
 if __name__ == "__main__":
     main()

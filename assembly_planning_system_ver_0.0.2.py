@@ -586,8 +586,8 @@ def main() -> None:
     item_5.add_type(type_D_m)
 
     # --- 1-4. 초기 상태 정의 ---
-    # init_state = State(item_list=[item_0, item_1, item_2, item_3, item_4, item_5])  # 모든 부품 적용 테스트
-    init_state = State(item_list=[item_0, item_2, item_3, item_5])  # 도어 체커 관련 부품만 적용
+    init_state = State(item_list=[item_0, item_1, item_2, item_3, item_4, item_5])  # 모든 부품 적용 테스트
+    # init_state = State(item_list=[item_0, item_2, item_3, item_5])  # 도어 체커 관련 부품만 적용
 
     # ========================================
     # 2. 알고리즘 수행 단계
@@ -604,32 +604,31 @@ def main() -> None:
         print("---< plan_number = {} >---\n".format(plan_number))
         print_state_action_sequence_log(final_state)
     print("\n---< 결과 출력 종료 >---")
-
     
     # ========================================
     # 3. State Transition Model 테스트
     # ========================================
 
     # --- 3-1. 현재 상테에서 적용 가능한 action 후보 확인 ---
-    print("---< action 후보 확인 시작 >---\n")
-    candidate_match_list = check_candidate_match(init_state, assembly_data_base)
-    print_match_info_list(init_state, candidate_match_list)
-    print("\n---< action 후보 확인 종료 >---")
+    # print("---< action 후보 확인 시작 >---\n")
+    # candidate_match_list = check_candidate_match(init_state, assembly_data_base)
+    # print_match_info_list(init_state, candidate_match_list)
+    # print("\n---< action 후보 확인 종료 >---")
     
-    # --- 3-2. action 후보 중 1개 선택 ---
-    print("---< action 후보 선택 시작 >---\n")
-    elected_match = candidate_match_list[0]
-    print_match_info(init_state, elected_match)
-    print("\n---< action 후보 선택 종료 >---")
+    # # --- 3-2. action 후보 중 1개 선택 ---
+    # print("---< action 후보 선택 시작 >---\n")
+    # elected_match = candidate_match_list[0]
+    # print_match_info(init_state, elected_match)
+    # print("\n---< action 후보 선택 종료 >---")
 
-    # --- 3-3. State에 action 적용하여 State Transition 확인하기 ---
-    print("---< action 적용 및 State Transition 확인 시작 >---\n")
-    updated_state = execute_assemble(init_state, elected_match)
-    print("*초기 상태 : ")
-    print_state_action_sequence_log(init_state)
-    print("\n*action 적용 후 상태 : ")
-    print_state_action_sequence_log(updated_state)
-    print("\n---< action 적용 및 State Transition 확인 종료 >---")
+    # # --- 3-3. State에 action 적용하여 State Transition 확인하기 ---
+    # print("---< action 적용 및 State Transition 확인 시작 >---\n")
+    # updated_state = execute_assemble(init_state, elected_match)
+    # print("*초기 상태 : ")
+    # print_state_action_sequence_log(init_state)
+    # print("\n*action 적용 후 상태 : ")
+    # print_state_action_sequence_log(updated_state)
+    # print("\n---< action 적용 및 State Transition 확인 종료 >---")
 
 
 if __name__ == "__main__":
